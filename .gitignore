@@ -1,0 +1,58 @@
+# Laravel & PHP
+/vendor/
+/node_modules/
+/public/storage
+/public/hot
+/bootstrap/cache/*
+!/bootstrap/cache/.gitignore
+
+# Storage
+/storage/*.key
+/storage/app/*
+!/storage/app/.gitignore
+!/storage/app/documents
+/storage/app/documents/*
+!/storage/app/documents/.gitignore
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+/storage/logs/*
+!/storage/logs/.gitignore
+
+# Database
+*.sqlite
+*.sqlite-journal
+/database/*.sqlite
+/database/*.sqlite-journal
+
+# Environment
+.env
+.env.backup
+.env.production
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Composer
+composer.phar
+composer.lock
+
+# NPM
+package-lock.json
+yarn.lock
+
+# Temporary files
+/tmp/
+*.log
+*.tmp
