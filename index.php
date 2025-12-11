@@ -255,7 +255,8 @@
                     ");
                 }
             } catch (PDOException $e) {
-                die("Database error: " . $e->getMessage());
+                error_log("Database error: " . $e->getMessage());
+                die("خطأ في قاعدة البيانات. يرجى المحاولة مرة أخرى لاحقاً.");
             }
             
             // Handle file upload
@@ -270,10 +271,34 @@
                     
                     if (!empty($title) && $_FILES['document']['error'] === UPLOAD_ERR_OK) {
                         $file = $_FILES['document'];
+                        
+                        // Validate file type
+                        $allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'jpg', 'jpeg', 'png', 'gif', 'zip', 'rar'];
+                        $allowedMimeTypes = [
+                            'application/pdf',
+                            'application/msword',
+                            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                            'application/vnd.ms-excel',
+                            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                            'text/plain',
+                            'image/jpeg',
+                            'image/png',
+                            'image/gif',
+                            'application/zip',
+                            'application/x-rar-compressed'
+                        ];
+                        
                         $originalFilename = basename($file['name']);
-                        $fileExtension = pathinfo($originalFilename, PATHINFO_EXTENSION);
-                        $filename = uniqid() . '_' . time() . '.' . $fileExtension;
-                        $destination = $uploadsDir . '/' . $filename;
+                        $fileExtension = strtolower(pathinfo($originalFilename, PATHINFO_EXTENSION));
+                        $fileMimeType = mime_content_type($file['tmp_name']);
+                        
+                        // Validate file extension and MIME type
+                        if (!in_array($fileExtension, $allowedExtensions) || !in_array($fileMimeType, $allowedMimeTypes)) {
+                            $message = 'نوع الملف غير مسموح به! الأنواع المسموحة: PDF, DOC, DOCX, XLS, XLSX, TXT, JPG, PNG, GIF, ZIP, RAR';
+                            $messageType = 'error';
+                        } else {
+                            $filename = uniqid() . '_' . time() . '.' . $fileExtension;
+                            $destination = $uploadsDir . '/' . $filename;
                         
                         if (move_uploaded_file($file['tmp_name'], $destination)) {
                             $stmt = $db->prepare("INSERT INTO documents (title, description, filename, original_filename, file_size, mime_type, category_id) 
@@ -284,7 +309,7 @@
                                 $filename,
                                 $originalFilename,
                                 $file['size'],
-                                $file['type'],
+                                $fileMimeType,
                                 $category_id
                             ]);
                             $message = 'تم رفع الوثيقة بنجاح!';
@@ -292,6 +317,7 @@
                         } else {
                             $message = 'فشل رفع الملف!';
                             $messageType = 'error';
+                        }
                         }
                     } else {
                         $message = 'يرجى ملء جميع الحقول المطلوبة!';
@@ -341,8 +367,28 @@
                 if ($doc) {
                     $filePath = $uploadsDir . '/' . $doc['filename'];
                     if (file_exists($filePath)) {
-                        header('Content-Type: ' . $doc['mime_type']);
-                        header('Content-Disposition: attachment; filename="' . $doc['original_filename'] . '"');
+                        // Sanitize filename for header
+                        $safeFilename = preg_replace('/[^a-zA-Z0-9._-]/', '_', $doc['original_filename']);
+                        
+                        // Validate MIME type
+                        $allowedMimeTypes = [
+                            'application/pdf',
+                            'application/msword',
+                            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                            'application/vnd.ms-excel',
+                            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                            'text/plain',
+                            'image/jpeg',
+                            'image/png',
+                            'image/gif',
+                            'application/zip',
+                            'application/x-rar-compressed'
+                        ];
+                        
+                        $mimeType = in_array($doc['mime_type'], $allowedMimeTypes) ? $doc['mime_type'] : 'application/octet-stream';
+                        
+                        header('Content-Type: ' . $mimeType);
+                        header('Content-Disposition: attachment; filename="' . $safeFilename . '"');
                         header('Content-Length: ' . filesize($filePath));
                         readfile($filePath);
                         exit;
