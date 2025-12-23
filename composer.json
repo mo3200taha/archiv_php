@@ -1,0 +1,25 @@
+{
+    "name": "mo3200taha/archiv_php",
+    "type": "project",
+    "description": "Electronic Document Archiving System",
+    "keywords": ["php", "document", "archiving"],
+    "license": "MIT",
+    "require": {
+        "php": "^7.4|^8.0",
+        "ext-pdo": "*",
+        "ext-sqlite3": "*",
+        "ext-fileinfo": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true
+    }
+}
